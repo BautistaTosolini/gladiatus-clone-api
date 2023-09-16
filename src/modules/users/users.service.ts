@@ -2,11 +2,12 @@ import { HttpException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { CreateUserDto } from 'src/dto/create-user.dto';
-import { UpdateUserDto } from 'src/dto/update-user.dto';
 import { User } from 'src/schemas/user.schema';
 import { genSalt, hash, compare } from 'bcryptjs';
 import { AuthenticateUserDto } from 'src/dto/authenticate-user.dto';
 import { JwtService } from '@nestjs/jwt';
+// import { OnboardUserDto } from 'src/dto/onboard-user.dto';
+import axios from 'axios';
 
 @Injectable()
 export class UsersService {
@@ -46,6 +47,16 @@ export class UsersService {
       throw new HttpException('Something went wrong', 500);
     }
 
+    const result = await axios.post('http://localhost:4000/characters', {
+      user,
+    });
+
+    const character = result.data;
+
+    user.character = character;
+
+    await user.save();
+
     user.password = undefined;
 
     const token = this.jwtService.sign({ id: user._id });
@@ -59,17 +70,13 @@ export class UsersService {
   }
 
   async findOne(id: string) {
-    const user = await this.userModel.findById(id);
+    const user = await this.userModel.findById(id).populate('character').exec();
 
     if (!user) {
       throw new HttpException('User not found', 404);
     }
 
     return user;
-  }
-
-  update(id: string, user: UpdateUserDto) {
-    return this.userModel.findByIdAndUpdate(id, user);
   }
 
   async login(userData: AuthenticateUserDto) {

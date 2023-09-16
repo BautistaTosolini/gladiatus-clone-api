@@ -1,10 +1,8 @@
 import { Module } from '@nestjs/common';
-import { UsersModule } from './users/users.module';
+import { UsersModule } from 'src/modules/users/users.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule } from '@nestjs/config';
-import { CharactersController } from './characters/characters.controller';
-import { CharactersService } from './characters/characters.service';
-import { CharactersModule } from './characters/characters.module';
+import { CharactersModule } from 'src/modules/characters/characters.module';
 
 @Module({
   imports: [
@@ -13,7 +11,7 @@ import { CharactersModule } from './characters/characters.module';
     UsersModule,
     CharactersModule,
   ],
-  controllers: [CharactersController],
-  providers: [CharactersService],
+  controllers: [],
+  providers: [],
 })
 export class AppModule {}

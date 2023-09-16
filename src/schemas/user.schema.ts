@@ -1,16 +1,19 @@
 import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
+import mongoose from 'mongoose';
 
 @Schema({
   timestamps: true,
 })
 export class User {
   @Prop({
+    type: String,
     required: true,
     trim: true,
   })
   name: string;
 
   @Prop({
+    type: String,
     required: true,
     unique: true,
     trim: true,
@@ -18,6 +21,7 @@ export class User {
   username: string;
 
   @Prop({
+    type: String,
     required: true,
     unique: true,
     trim: true,
@@ -25,12 +29,16 @@ export class User {
   email: string;
 
   @Prop({
+    type: String,
     required: true,
     select: false,
   })
   password: string;
 
-  @Prop()
+  @Prop({
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Character',
+  })
   character: string;
 }
 

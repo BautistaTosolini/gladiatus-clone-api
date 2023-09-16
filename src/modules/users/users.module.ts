@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { User, UserSchema } from 'src/schemas/user.schema';
-import { UsersController } from './users.controller';
-import { UsersService } from './users.service';
+import { UsersController } from 'src/modules/users/users.controller';
+import { UsersService } from 'src/modules/users/users.service';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule } from '@nestjs/config';
 
