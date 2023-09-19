@@ -9,19 +9,20 @@ import {
   Res,
   UseGuards,
   Req,
+  Headers,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { AuthenticateUserDto } from 'src/dto/authenticate-user.dto';
 import { CreateUserDto } from 'src/dto/create-user.dto';
 import { UsersService } from 'src/modules/users/users.service';
 import { AuthGuard } from 'src/modules/auth/auth.guard';
-import { UserInterface } from 'src/interfaces/user.interface';
+import { UserInterface } from 'lib/interfaces/user.interface';
 
-interface AuthenticatedRequest extends Request {
+export interface AuthenticatedRequest extends Request {
   user?: UserInterface;
 }
 
-@Controller('users')
+@Controller('api/users')
 export class UsersController {
   constructor(private userService: UsersService) {}
 
@@ -48,11 +49,18 @@ export class UsersController {
     }
   }
 
-  @UseGuards(AuthGuard)
   @Get(':id')
-  async findOne(@Param('id') id: string) {
+  async findOne(
+    @Param('id') id: string,
+    @Headers('journal') journalHeader: string,
+    @Headers('battle') battleReportHeader: string,
+  ) {
     try {
-      const user = await this.userService.findOne(id);
+      const user = await this.userService.findOne({
+        id,
+        journal: journalHeader === 'true' ? true : false,
+        battleReport: battleReportHeader === 'true' ? true : false,
+      });
 
       return user;
     } catch (error) {
@@ -66,7 +74,7 @@ export class UsersController {
     return request.user;
   }
 
-  @Post('login')
+  @Post('session')
   async login(
     @Res({ passthrough: true }) response: Response,
     @Body() userData: AuthenticateUserDto,

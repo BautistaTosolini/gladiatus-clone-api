@@ -59,6 +59,18 @@ export class Character {
   agility: number;
 
   @Prop({
+    type: Number,
+    default: 3,
+  })
+  intelligence: number;
+
+  @Prop({
+    type: Number,
+    default: 3,
+  })
+  charisma: number;
+
+  @Prop({
     type: Boolean,
     default: false,
   })
@@ -69,6 +81,18 @@ export class Character {
     enum: ['male', 'female'],
   })
   gender: 'male' | 'female';
+
+  @Prop({
+    type: mongoose.Types.ObjectId,
+    ref: 'Journal',
+  })
+  journal: string;
+
+  @Prop({
+    type: mongoose.Types.ObjectId,
+    ref: 'Battle',
+  })
+  battleReport: string;
 }
 
 export const CharacterSchema = SchemaFactory.createForClass(Character);

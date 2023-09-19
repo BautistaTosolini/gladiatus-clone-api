@@ -4,10 +4,14 @@ import { Model } from 'mongoose';
 import { CreateUserDto } from 'src/dto/create-user.dto';
 import { User } from 'src/schemas/user.schema';
 import { genSalt, hash, compare } from 'bcryptjs';
-import { AuthenticateUserDto } from 'src/dto/authenticate-user.dto';
+import {
+  AuthenticateUserDto,
+  FindOneUserDto,
+} from 'src/dto/authenticate-user.dto';
 import { JwtService } from '@nestjs/jwt';
 // import { OnboardUserDto } from 'src/dto/onboard-user.dto';
 import axios from 'axios';
+import { BASE_API_URL } from 'lib/constants';
 
 @Injectable()
 export class UsersService {
@@ -47,7 +51,7 @@ export class UsersService {
       throw new HttpException('Something went wrong', 500);
     }
 
-    const result = await axios.post('http://localhost:4000/characters', {
+    const result = await axios.post(`${BASE_API_URL}/characters`, {
       user,
     });
 
@@ -69,12 +73,35 @@ export class UsersService {
     return data;
   }
 
-  async findOne(id: string) {
-    const user = await this.userModel.findById(id).populate('character').exec();
+  async findOne({ id, journal, battleReport }: FindOneUserDto) {
+    if (journal && battleReport) {
+      const user = await this.userModel.findById(id).populate({
+        path: 'character',
+        populate: { path: 'journal battleReport' },
+      });
 
-    if (!user) {
-      throw new HttpException('User not found', 404);
+      return user;
     }
+
+    if (journal) {
+      const user = await this.userModel
+        .findById(id)
+        .populate({ path: 'character', populate: { path: 'journal' } });
+
+      return user;
+    }
+
+    if (battleReport) {
+      const user = await this.userModel
+        .findById(id)
+        .populate({ path: 'character', populate: { path: 'battleReport' } });
+
+      return user;
+    }
+
+    const user = await this.userModel
+      .findById(id)
+      .populate({ path: 'character' });
 
     return user;
   }
