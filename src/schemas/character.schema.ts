@@ -36,37 +36,37 @@ export class Character {
 
   @Prop({
     type: Number,
-    default: 3,
+    default: 5,
   })
   strength: number;
 
   @Prop({
     type: Number,
-    default: 3,
+    default: 5,
   })
   dexterity: number;
 
   @Prop({
     type: Number,
-    default: 3,
+    default: 5,
   })
   endurance: number;
 
   @Prop({
     type: Number,
-    default: 3,
+    default: 5,
   })
   agility: number;
 
   @Prop({
     type: Number,
-    default: 3,
+    default: 5,
   })
   intelligence: number;
 
   @Prop({
     type: Number,
-    default: 3,
+    default: 5,
   })
   charisma: number;
 

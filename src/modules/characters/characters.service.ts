@@ -71,6 +71,10 @@ export class CharactersService {
   }
 
   async battle(battleData: BattleCharacterDto, character: CharacterInterface) {
+    if (!character.onboarded) {
+      throw new HttpException('Character not onboarded', 401);
+    }
+
     const { zone, enemyName } = battleData;
 
     const journal = character.journal;
@@ -96,6 +100,7 @@ export class CharactersService {
       rounds: battleResults.rounds,
       zone,
       enemy: pickedEnemy,
+      fighter: character._id,
     });
 
     await this.battleModel.findByIdAndDelete(character.battleReport);
@@ -169,7 +174,9 @@ export class CharactersService {
   }
 
   async findBattleReport(id: string) {
-    const battleReport = await this.battleModel.findById(id);
+    const battleReport = await this.battleModel
+      .findById(id)
+      .populate({ path: 'fighter' });
 
     if (!battleReport) {
       throw new HttpException('Battle Report not found', 404);
