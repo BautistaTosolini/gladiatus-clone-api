@@ -1,11 +1,11 @@
 <h1 align="center">Gladiatus Clone API</h1>
 
 <p align="center">
-  <img alt="Github top language" src="https://img.shields.io/github/languages/top/{{YOUR_GITHUB_USERNAME}}/gladiatus-clone-api?color=56BEB8">
+  <img alt="Github top language" src="https://img.shields.io/github/languages/top/BautistaTosolini/gladiatus-clone-api?color=56BEB8">
 
-  <img alt="Github language count" src="https://img.shields.io/github/languages/count/{{YOUR_GITHUB_USERNAME}}/gladiatus-clone-api?color=56BEB8">
+  <img alt="Github language count" src="https://img.shields.io/github/languages/count/BautistaTosolini/gladiatus-clone-api?color=56BEB8">
 
-  <img alt="Repository size" src="https://img.shields.io/github/repo-size/{{YOUR_GITHUB_USERNAME}}/gladiatus-clone-api?color=56BEB8">
+  <img alt="Repository size" src="https://img.shields.io/github/repo-size/BautistaTosolini/gladiatus-clone-api?color=56BEB8">
 </p>
 
 <p align="center">
@@ -15,7 +15,7 @@
   <a href="#white_check_mark-requirements">Requirements</a> &#xa0; | &#xa0;
   <a href="#checkered_flag-starting">Starting</a> &#xa0; | &#xa0;
   <a href="#memo-license">License</a> &#xa0; | &#xa0;
-  <a href="https://github.com/{{YOUR_GITHUB_USERNAME}}" target="_blank">Author</a>
+  <a href="https://github.com/BautistaTosolini" target="_blank">Author</a>
 </p>
 
 <br>
@@ -26,8 +26,8 @@
 
 ## :sparkles: Features ##
 
-:heavy_check_mark: Character creation;\
-:heavy_check_mark: Fight against creatures and enemies;\
+:heavy_check_mark: Character creation\
+:heavy_check_mark: Fight against creatures and enemies
 
 ## :rocket: Technologies ##
 
@@ -432,7 +432,7 @@ Content-Type: application/json
 }
 ```
 
-### Battle
+### Get Battle Report
 
 - **Route**: `/api/characters/battle/:id`
 - **Protected**: true
