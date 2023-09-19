@@ -15,9 +15,27 @@ export class AuthGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
+
+    let journal = false;
+    let battleReport = false;
+
+    // extract headers and cookies
     const token = this.extractTokenFromRequest(request);
     const journalHeader = this.extractJournalHeader(request);
     const battleReportHeader = this.extractBattleReportHeader(request);
+
+    const routePath = request.route.path;
+
+    if (journalHeader === 'true') journal = true;
+
+    if (battleReportHeader === 'true') battleReport = true;
+
+    if (
+      routePath === '/api/characters/enemy' ||
+      routePath === '/api/characters/battle'
+    ) {
+      journal = true;
+    }
 
     if (!token) {
       throw new UnauthorizedException();
@@ -30,8 +48,8 @@ export class AuthGuard implements CanActivate {
 
       const result = await axios.get(`${BASE_API_URL}/users/${id}`, {
         headers: {
-          journal: journalHeader === 'true' ? 'true' : 'false',
-          battle: battleReportHeader === 'true' ? 'true' : 'false',
+          journal: journal ? 'true' : 'false',
+          battle: battleReport ? 'true' : 'false',
         },
       });
 
