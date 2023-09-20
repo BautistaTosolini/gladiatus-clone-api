@@ -136,4 +136,24 @@ export class CharactersController {
       );
     }
   }
+
+  @UseGuards(AuthGuard)
+  @Put('/:stat')
+  async train(
+    @Param('stat') stat: string,
+    @Req() request: AuthenticatedRequest,
+  ) {
+    try {
+      const character = request.user.character;
+
+      const result = await this.characterService.train({ stat, character });
+
+      return result;
+    } catch (error) {
+      throw new HttpException(
+        { message: error.message },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
 }

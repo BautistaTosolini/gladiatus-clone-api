@@ -184,4 +184,42 @@ export class CharactersService {
 
     return battleReport;
   }
+
+  async train({
+    stat,
+    character,
+  }: {
+    stat: string;
+    character: CharacterInterface;
+  }) {
+    const statsList = [
+      'strength',
+      'endurance',
+      'agility',
+      'dexterity',
+      'intelligence',
+      'charisma',
+    ];
+
+    const requiredCrowns = Math.pow(character[stat], 2) + character[stat] + 1;
+
+    if (!statsList.includes(stat)) {
+      throw new HttpException('Stat not found', 404);
+    }
+
+    if (character.crowns < requiredCrowns) {
+      throw new HttpException('Not enough crowns', 400);
+    }
+
+    character.crowns -= requiredCrowns;
+    character[stat]++;
+
+    try {
+      await this.characterModel.findByIdAndUpdate(character._id, character);
+    } catch (error) {
+      throw new HttpException(error.message, 500);
+    }
+
+    return character;
+  }
 }

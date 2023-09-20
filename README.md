@@ -14,7 +14,7 @@
   <a href="#rocket-technologies">Technologies</a> &#xa0; | &#xa0;
   <a href="#white_check_mark-requirements">Requirements</a> &#xa0; | &#xa0;
   <a href="#checkered_flag-starting">Starting</a> &#xa0; | &#xa0;
-  <a href="#memo-license">License</a> &#xa0; | &#xa0;
+  <a href="#memo-endpoints">Endpoints</a> &#xa0; | &#xa0;
   <a href="https://github.com/BautistaTosolini" target="_blank">Author</a>
 </p>
 
@@ -312,7 +312,7 @@ Content-Type: application/json
 - **Route**: `/api/characters/enemy?zone=zone`
 - **Protected**: true
 - **HTTP Method**: GET
-- **Description**: Get the information about enemies from certain zones, returns an array of the 4 enemies from the specific zone.
+- **Description**: Get the information about enemies from certain zones, returns an array of the 4 enemies from the specific zone. The fields of each enemy depends of the knowledge level the character has on that specific creature.
 - **Query**: 
   - `zone` - Name of the zone.
 - **Example**:
@@ -495,7 +495,7 @@ Content-Type: application/json
 }
 ```
 
-Made with :heart: by <a href="https://github.com/BautistaTosolini" target="_blank">BautistaTosolini</a>
+<p align="center">Made with :heart: by <a href="https://github.com/BautistaTosolini" target="_blank">BautistaTosolini</a></p>
 
 &#xa0;
 
