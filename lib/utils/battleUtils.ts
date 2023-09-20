@@ -8,7 +8,7 @@ import {
   Round,
 } from 'lib/interfaces/battle.interface';
 import { EnemyInterface } from 'lib/interfaces/enemy.interface';
-import { chooseRandomOption, randomBoolean } from './randomUtils';
+import { getRandomNumber, randomBoolean } from 'lib/utils/randomUtils';
 
 export function getRandomEnemyStats(enemy: EnemyInterface) {
   const levels = enemy.level;
@@ -187,12 +187,10 @@ export function fight({ attacker, defender }: FightParams): {
   if (attackerHP <= 0 && defenderHP <= 0) {
     winner = 'Draw';
     const xpDrop = parseInt(
-      (chooseRandomOption(defender.xp[0], defender.xp[1]) * 0.5).toFixed(0),
+      (getRandomNumber(defender.xp[0], defender.xp[1]) * 0.5).toFixed(0),
     );
     const crownsDrop = parseInt(
-      chooseRandomOption(defender.crowns[0], defender.crowns[1] * 0.3).toFixed(
-        0,
-      ),
+      getRandomNumber(defender.crowns[0], defender.crowns[1] * 0.3).toFixed(0),
     );
 
     const result: Result = {
@@ -217,7 +215,7 @@ export function fight({ attacker, defender }: FightParams): {
   } else if (attackerHP <= 0) {
     winner = defender.name;
     const xpDrop = parseInt(
-      (chooseRandomOption(defender.xp[0], defender.xp[1]) * 0.3).toFixed(0),
+      (getRandomNumber(defender.xp[0], defender.xp[1]) * 0.3).toFixed(0),
     );
     const crownsDrop = 0;
 
@@ -242,11 +240,8 @@ export function fight({ attacker, defender }: FightParams): {
     return { rounds, result };
   } else {
     winner = attacker.name;
-    const xpDrop = chooseRandomOption(defender.xp[0], defender.xp[1]);
-    const crownsDrop = chooseRandomOption(
-      defender.crowns[0],
-      defender.crowns[1],
-    );
+    const xpDrop = getRandomNumber(defender.xp[0], defender.xp[1]);
+    const crownsDrop = getRandomNumber(defender.crowns[0], defender.crowns[1]);
 
     const result: Result = {
       winner,

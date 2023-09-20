@@ -46,10 +46,10 @@ Before starting :checkered_flag:, you need to have [Git](https://git-scm.com) an
 
 ```bash
 # Clone this project
-$ git clone https://github.com/BautistaTosolini/gladiatus-clone
+$ git clone https://github.com/BautistaTosolini/gladiatus-clone-api
 
 # Access
-$ cd gladiatus-clone
+$ cd gladiatus-clone-api
 
 # Install dependencies
 $ npm install
@@ -492,6 +492,41 @@ Content-Type: application/json
       ]
     },
   ]
+}
+```
+
+### Train
+
+- **Route**: `/api/characters/train/:stat`
+- **Protected**: true
+- **HTTP Method**: PUT
+- **Description**: Improve a stat if the character has the required crowns.
+- **Params**: 
+  - `stat` - Stat to improve, it can be 'strength', 'endurance', 'agility', 'dexterity', 'intelligence' or 'charisma'.
+- **Example**:
+```
+GET /api/characters/train/strength
+Content-Type: application/json
+```
+- **Reponse**:
+```
+{
+  "_id": "650a206db1fe35ade023498b",
+  "owner": "650a206cb1fe35ade0234989",
+  "crowns": 0,
+  "level": 1,
+  "experience": 0,
+  "strength": 6,
+  "dexterity": 5,
+  "endurance": 5,
+  "agility": 5,
+  "intelligence": 5,
+  "charisma": 5,
+  "onboarded": true,
+  "createdAt": "2023-09-19T22:27:57.007Z",
+  "journal": "650a206db1fe35ade023498d",
+  "gender": "male",
+  "name": "example character"
 }
 ```
 

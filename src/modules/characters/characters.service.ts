@@ -83,13 +83,15 @@ export class CharactersService {
 
     const { battleResults, pickedEnemy } = battleZone({ character, enemy });
 
+    journal.zones[zone][enemyName].timesFought++;
+
     if (battleResults.result.winner === character.name) {
       journal.zones[zone][enemyName].wins++;
     } else {
       journal.zones[zone][enemyName].losses++;
     }
 
-    if (journal.zones[zone][enemyName].knowledge < 2 && randomBoolean(30)) {
+    if (journal.zones[zone][enemyName].knowledge < 3 && randomBoolean(30)) {
       journal.zones[zone][enemyName].knowledge++;
     }
 
@@ -148,16 +150,16 @@ export class CharactersService {
           id: enemy.id,
         };
 
-        if (enemyKnowledge >= 0) {
+        if (enemyKnowledge > 0) {
           enemyInfo['level'] = enemy.level;
         }
 
-        if (enemyKnowledge >= 1) {
+        if (enemyKnowledge > 1) {
           enemyInfo['crowns'] = enemy.crowns;
           enemyInfo['xp'] = enemy.xp;
         }
 
-        if (enemyKnowledge >= 2) {
+        if (enemyKnowledge > 2) {
           enemyInfo['strength'] = enemy.strength;
           enemyInfo['endurance'] = enemy.endurance;
           enemyInfo['agility'] = enemy.agility;

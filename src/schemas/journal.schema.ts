@@ -40,6 +40,32 @@ export class Journal {
           losses: 0,
         },
       },
+      bandit: {
+        slave: {
+          knowledge: 0,
+          timesFought: 0,
+          wins: 0,
+          losses: 0,
+        },
+        mercenary: {
+          knowledge: 0,
+          timesFought: 0,
+          wins: 0,
+          losses: 0,
+        },
+        berserker: {
+          knowledge: 0,
+          timesFought: 0,
+          wins: 0,
+          losses: 0,
+        },
+        chief: {
+          knowledge: 0,
+          timesFought: 0,
+          wins: 0,
+          losses: 0,
+        },
+      },
     },
   })
   zones: {
@@ -63,6 +89,32 @@ export class Journal {
         losses: number;
       };
       bear: {
+        knowledge: number;
+        timesFought: number;
+        wins: number;
+        losses: number;
+      };
+    };
+    bandit: {
+      slave: {
+        knowledge: number;
+        timesFought: number;
+        wins: number;
+        losses: number;
+      };
+      mercenary: {
+        knowledge: number;
+        timesFought: number;
+        wins: number;
+        losses: number;
+      };
+      berserker: {
+        knowledge: number;
+        timesFought: number;
+        wins: number;
+        losses: number;
+      };
+      chief: {
         knowledge: number;
         timesFought: number;
         wins: number;
