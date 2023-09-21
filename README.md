@@ -83,7 +83,9 @@ npm run start:dev
 - [Get Character By Id](#get-character-by-id)
 - [Get Enemies](#get-enemies)
 - [Battle](#battle)
+- [Battle Player vs Player](#battle-player-vs-player)
 - [Get Battle Report](#get-battle-report)
+- [Train](#train)
 
 ## User endpoints
 
@@ -432,12 +434,173 @@ Content-Type: application/json
 }
 ```
 
+### Battle
+
+- **Route**: `/api/characters/battle?zone=zone&enemy=enemy`
+- **Protected**: true
+- **HTTP Method**: POST
+- **Description**: Fight an enemy and get the result of the battle which includes drops and statistics and array of rounds which details the fight events.
+- **Query**: 
+  - `zone` - Name of the zone.
+  - `enemy` - Name of the enemy to fight.
+- **Example**:
+```
+POST /api/characters/battle?zone=grimwood&enemy=rat
+Content-Type: application/json
+```
+- **Reponse**:
+```
+{
+  "zone": "grimwood",
+  "fighter": "650a206db1fe35ade023498b",
+  "_id": "650a31dbb1fe35ade02349a3",
+  "createdAt": "2023-09-19T23:42:19.193Z",
+  "result": {
+    "winner": "Rat",
+    "xpDrop": 0,
+    "crownsDrop": 0,
+    "attackerFinalHealth": 0,
+    "defenderFinalHealth": 17,
+    "attackerTotalDamage": 27,
+    "defenderTotalDamage": 25,
+    "attackerHealth": 25,
+    "defenderHealth": 44
+  },
+  "rounds": [
+    {
+      "roundNumber": 1,
+      "attackerHP": 25,
+      "defenderHP": 44,
+      "events": [
+        "Looker845 misses their attack.",
+        "Rat misses their attack."
+      ]
+    },
+    {
+      "roundNumber": 2,
+      "attackerHP": 25,
+      "defenderHP": 44,
+      "events": [
+        "Looker845 misses their attack.",
+        "Rat misses their attack."
+      ]
+    },
+    {
+      "roundNumber": 3,
+      "attackerHP": 25,
+      "defenderHP": 44,
+      "events": [
+        "Looker845 misses their attack.",
+        "Rat hits Looker845 for 1 points."
+      ]
+    },
+  ]
+}
+```
+
+### Battle Player vs Player
+
+- **Route**: `/api/characters/battle/:id`
+- **Protected**: true
+- **HTTP Method**: POST
+- **Description**: Fight a character and get the result of the battle.
+- **Params**: 
+  - `id` - Id of the defender character.
+- **Example**:
+```
+POST /api/characters/battle/650bd7d0b94dcd98e58014e5
+Content-Type: application/json
+```
+- **Reponse**:
+```
+{
+  "result": {
+    "winner": "Looker845",
+    "attackerFinalHealth": 1,
+    "defenderFinalHealth": 0,
+    "attackerTotalDamage": 25,
+    "defenderTotalDamage": 24,
+    "attackerHealth": 25,
+    "defenderHealth": 25
+  },
+  "rounds": [
+    {
+      "roundNumber": 1,
+      "attackerHP": 25,
+      "defenderHP": 25,
+      "events": [
+          "Looker845 hits Chevrolet Corsa for 1 points.",
+          "Chevrolet Corsa hits Looker845 for 1 points."
+      ]
+    },
+    {
+      "roundNumber": 2,
+      "attackerHP": 24,
+      "defenderHP": 24,
+      "events": [
+          "Looker845 hits Chevrolet Corsa for 1 points.",
+          "Chevrolet Corsa hits Looker845 for 1 points."
+      ]
+    },
+    {
+      "roundNumber": 3,
+      "attackerHP": 23,
+      "defenderHP": 23,
+      "events": [
+          "Looker845 hits Chevrolet Corsa for 1 points.",
+          "Chevrolet Corsa hits Looker845 for 1 points."
+      ]
+    },
+  ]
+  "defender": {
+    "_id": "650bd7d0b94dcd98e58014e5",
+    "owner": "650bd7d0b94dcd98e58014e3",
+    "crowns": 106,
+    "level": 1,
+    "experience": 2,
+    "strength": 5,
+    "dexterity": 5,
+    "endurance": 5,
+    "agility": 5,
+    "intelligence": 5,
+    "charisma": 5,
+    "onboarded": true,
+    "createdAt": "2023-09-21T05:42:40.890Z",
+    "journal": "650bd7d0b94dcd98e58014e7",
+    "gender": "female",
+    "name": "Chevrolet Corsa",
+    "battleReport": "650be029517e7afb12d56f76"
+    },
+    "attacker": {
+      "_id": "650bd7dbb94dcd98e58014fa",
+      "owner": "650bd7dbb94dcd98e58014f8",
+      "crowns": 91,
+      "level": 1,
+      "experience": 2,
+      "strength": 5,
+      "dexterity": 5,
+      "endurance": 5,
+      "agility": 5,
+      "intelligence": 5,
+      "charisma": 5,
+      "onboarded": true,
+      "createdAt": "2023-09-21T05:42:51.443Z",
+      "journal": "650bd7dbb94dcd98e58014fc",
+      "gender": "male",
+      "name": "Looker845",
+      "battleReport": "650c58486f186c0438d4cf96"
+    },
+    "_id": "650c590e6f186c0438d4cfa8",
+    "createdAt": "2023-09-21T14:54:06.410Z",
+}
+```
+
 ### Get Battle Report
 
 - **Route**: `/api/characters/battle/:id`
 - **Protected**: true
 - **HTTP Method**: GET
-- **Description**: Get the result and rounds of a battle.
+- **Description**: Get the result and rounds of a battle, if its versus a creature it returns the creature object in the defender field and its zone, if its player vs player it returns the populated player object.
 - **Params**: 
   - `id` - Unique id of the battle report.
 - **Example**:
@@ -449,7 +612,45 @@ Content-Type: application/json
 ```
 {
   "zone": "grimwood",
-  "fighter": "650a206db1fe35ade023498b",
+  "attacker": {
+    "_id": "650bd7dbb94dcd98e58014fa",
+    "owner": "650bd7dbb94dcd98e58014f8",
+    "crowns": 91,
+    "level": 1,
+    "experience": 2,
+    "strength": 5,
+    "dexterity": 5,
+    "endurance": 5,
+    "agility": 5,
+    "intelligence": 5,
+    "charisma": 5,
+    "onboarded": true,
+    "createdAt": "2023-09-21T05:42:51.443Z",
+    "journal": "650bd7dbb94dcd98e58014fc",
+    "gender": "male",
+    "name": "Looker845",
+    "battleReport": "650c58486f186c0438d4cf96"
+  },
+  "defender": {
+    "name": "Rat",
+    "image": "rat",
+    "level": 1,
+    "strength": 1,
+    "endurance": 2,
+    "dexterity": 3,
+    "agility": 4,
+    "intelligence": 2,
+    "charisma": 3,
+    "xp": [
+        1,
+        1
+    ],
+    "crowns": [
+        26,
+        72
+    ],
+    "id": 0
+  },
   "_id": "650a31dbb1fe35ade02349a3",
   "createdAt": "2023-09-19T23:42:19.193Z",
   "result": {

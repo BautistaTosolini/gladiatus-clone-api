@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Result, Round } from 'lib/interfaces/battle.interface';
+import { CharacterInterface } from 'lib/interfaces/character.interface';
 import { EnemyInterface } from 'lib/interfaces/enemy.interface';
 import mongoose from 'mongoose';
 import { Document } from 'mongoose';
@@ -21,11 +22,6 @@ export class Battle {
   rounds: Round[];
 
   @Prop({
-    type: Object,
-  })
-  enemy: EnemyInterface;
-
-  @Prop({
     type: String,
   })
   zone: string;
@@ -34,7 +30,13 @@ export class Battle {
     type: mongoose.Types.ObjectId,
     ref: 'Character',
   })
-  fighter: mongoose.Types.ObjectId;
+  defender: EnemyInterface | mongoose.Types.ObjectId | CharacterInterface;
+
+  @Prop({
+    type: mongoose.Types.ObjectId,
+    ref: 'Character',
+  })
+  attacker: mongoose.Types.ObjectId;
 }
 
 export const BattleSchema = SchemaFactory.createForClass(Battle);

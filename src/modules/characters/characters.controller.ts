@@ -85,6 +85,29 @@ export class CharactersController {
   }
 
   @UseGuards(AuthGuard)
+  @Post('battle/:id')
+  async battleCharacter(
+    @Req() request: AuthenticatedRequest,
+    @Param('id') id: string,
+  ) {
+    try {
+      const attacker = request.user.character;
+
+      const result = await this.characterService.battleCharacter({
+        attacker,
+        defenderId: id,
+      });
+
+      return result;
+    } catch (error) {
+      throw new HttpException(
+        { message: error.message },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
+  @UseGuards(AuthGuard)
   @Get('enemy')
   async findEnemies(
     @Query('zone') zone: string,

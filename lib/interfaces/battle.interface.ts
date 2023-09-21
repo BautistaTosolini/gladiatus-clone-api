@@ -20,10 +20,10 @@ export interface CalculateHitChanceParams {
 
 export interface FightParams {
   attacker: CharacterInterface;
-  defender: EnemyInterface;
+  defender: EnemyInterface | CharacterInterface;
 }
 
-export interface BattleZoneParams {
+export interface BattleCreatureParams {
   character: CharacterInterface;
   enemy: EnemyInterface;
 }
@@ -42,7 +42,7 @@ export interface Result {
   defenderHealth: number;
   attackerTotalDamage: number;
   defenderTotalDamage: number;
-  xpDrop: number;
-  crownsDrop: number;
   winner: string;
+  xpDrop?: number;
+  crownsDrop?: number;
 }

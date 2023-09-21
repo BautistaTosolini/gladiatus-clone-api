@@ -1,5 +1,5 @@
 import {
-  BattleZoneParams,
+  BattleCreatureParams,
   CalculateDoubleHitChanceParams,
   CalculateHPParams,
   CalculateHitChanceParams,
@@ -7,6 +7,7 @@ import {
   Result,
   Round,
 } from 'lib/interfaces/battle.interface';
+import { CharacterInterface } from 'lib/interfaces/character.interface';
 import { EnemyInterface } from 'lib/interfaces/enemy.interface';
 import { getRandomNumber, randomBoolean } from 'lib/utils/randomUtils';
 
@@ -186,17 +187,9 @@ export function fight({ attacker, defender }: FightParams): {
 
   if (attackerHP <= 0 && defenderHP <= 0) {
     winner = 'Draw';
-    const xpDrop = parseInt(
-      (getRandomNumber(defender.xp[0], defender.xp[1]) * 0.5).toFixed(0),
-    );
-    const crownsDrop = parseInt(
-      getRandomNumber(defender.crowns[0], defender.crowns[1] * 0.3).toFixed(0),
-    );
 
     const result: Result = {
       winner,
-      xpDrop,
-      crownsDrop,
       attackerFinalHealth,
       defenderFinalHealth,
       attackerTotalDamage: roundedAttackerTotalDamage,
@@ -214,15 +207,9 @@ export function fight({ attacker, defender }: FightParams): {
     return { rounds, result };
   } else if (attackerHP <= 0) {
     winner = defender.name;
-    const xpDrop = parseInt(
-      (getRandomNumber(defender.xp[0], defender.xp[1]) * 0.3).toFixed(0),
-    );
-    const crownsDrop = 0;
 
     const result: Result = {
       winner,
-      xpDrop,
-      crownsDrop,
       attackerFinalHealth,
       defenderFinalHealth,
       attackerTotalDamage: roundedAttackerTotalDamage,
@@ -240,13 +227,9 @@ export function fight({ attacker, defender }: FightParams): {
     return { rounds, result };
   } else {
     winner = attacker.name;
-    const xpDrop = getRandomNumber(defender.xp[0], defender.xp[1]);
-    const crownsDrop = getRandomNumber(defender.crowns[0], defender.crowns[1]);
 
     const result: Result = {
       winner,
-      xpDrop,
-      crownsDrop,
       attackerFinalHealth,
       defenderFinalHealth,
       attackerTotalDamage: roundedAttackerTotalDamage,
@@ -265,7 +248,7 @@ export function fight({ attacker, defender }: FightParams): {
   }
 }
 
-function calculateDamage(attacker) {
+function calculateDamage(attacker: CharacterInterface | EnemyInterface) {
   const minDamage = attacker.strength * 0.1;
   const maxDamage = attacker.strength * 0.2;
   const damage = Math.random() * (maxDamage - minDamage) + minDamage;
@@ -273,7 +256,9 @@ function calculateDamage(attacker) {
   return Math.max(damage, 1);
 }
 
-function calculateCriticalDamage(attacker) {
+function calculateCriticalDamage(
+  attacker: CharacterInterface | EnemyInterface,
+) {
   const minCriticalDamage = attacker.strength * 0.2;
   const maxCriticalDamage = attacker.strength * 0.3;
   const criticalDamage =
@@ -282,13 +267,49 @@ function calculateCriticalDamage(attacker) {
   return Math.max(criticalDamage, 1);
 }
 
-export function battleZone({ character, enemy }: BattleZoneParams): {
-  battleResults: { rounds: Round[]; result: Result };
+export function battleCreature({ character, enemy }: BattleCreatureParams): {
+  battle: { rounds: Round[]; result: Result };
   pickedEnemy: EnemyInterface;
 } {
   const pickedEnemy = getRandomEnemyStats(enemy);
 
-  const battleResults = fight({ attacker: character, defender: pickedEnemy });
+  const battle = fight({ attacker: character, defender: pickedEnemy });
 
-  return { battleResults, pickedEnemy };
+  if (battle.result.winner === 'Draw') {
+    const xpDrop = parseInt(
+      (getRandomNumber(pickedEnemy.xp[0], pickedEnemy.xp[1]) * 0.5).toFixed(0),
+    );
+    const crownsDrop = parseInt(
+      getRandomNumber(
+        pickedEnemy.crowns[0],
+        pickedEnemy.crowns[1] * 0.3,
+      ).toFixed(0),
+    );
+
+    battle.result.xpDrop = xpDrop;
+    battle.result.crownsDrop = crownsDrop;
+  }
+
+  if (battle.result.winner === character.name) {
+    const xpDrop = getRandomNumber(pickedEnemy.xp[0], pickedEnemy.xp[1]);
+    const crownsDrop = getRandomNumber(
+      pickedEnemy.crowns[0],
+      pickedEnemy.crowns[1],
+    );
+
+    battle.result.xpDrop = xpDrop;
+    battle.result.crownsDrop = crownsDrop;
+  }
+
+  if (battle.result.winner === pickedEnemy.name) {
+    const xpDrop = parseInt(
+      (getRandomNumber(pickedEnemy.xp[0], pickedEnemy.xp[1]) * 0.3).toFixed(0),
+    );
+    const crownsDrop = 0;
+
+    battle.result.xpDrop = xpDrop;
+    battle.result.crownsDrop = crownsDrop;
+  }
+
+  return { battle, pickedEnemy };
 }

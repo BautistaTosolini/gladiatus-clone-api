@@ -8,7 +8,7 @@ import { JwtService } from '@nestjs/jwt';
 import { CharacterInterface } from 'lib/interfaces/character.interface';
 import { BattleCharacterDto } from 'src/dto/combat-character.dto';
 import { zones } from 'data/enemies';
-import { battleZone } from 'lib/utils/battleUtils';
+import { battleCreature, fight } from 'lib/utils/battleUtils';
 import { randomBoolean } from 'lib/utils/randomUtils';
 import { Battle } from 'src/schemas/battle.schema';
 import { Journal } from 'src/schemas/journal.schema';
@@ -81,52 +81,128 @@ export class CharactersService {
 
     const enemy = zones[zone][enemyName];
 
-    const { battleResults, pickedEnemy } = battleZone({ character, enemy });
+    const { battle, pickedEnemy } = battleCreature({ character, enemy });
 
-    journal.zones[zone][enemyName].timesFought++;
+    // Update journal logs
+    journal.zones[zone][enemyName].battles++;
 
-    if (battleResults.result.winner === character.name) {
+    if (battle.result.winner === character.name) {
+      journal.world.battles++;
+      journal.world.wins++;
+      journal.world.crownsEarned += battle.result.crownsDrop;
       journal.zones[zone][enemyName].wins++;
-    } else {
-      journal.zones[zone][enemyName].losses++;
+
+      if (journal.zones[zone][enemyName].knowledge < 3 && randomBoolean(30)) {
+        journal.zones[zone][enemyName].knowledge++;
+      }
     }
 
-    if (journal.zones[zone][enemyName].knowledge < 3 && randomBoolean(30)) {
-      journal.zones[zone][enemyName].knowledge++;
+    if (battle.result.winner === pickedEnemy.name) {
+      journal.world.battles++;
+      journal.world.defeats++;
+      journal.zones[zone][enemyName].defeats++;
+    }
+
+    if (battle.result.winner === 'Draw') {
+      journal.world.battles++;
+      journal.world.draws++;
+      journal.zones[zone][enemyName].draws++;
     }
 
     await this.journalModel.findByIdAndUpdate(journal._id, journal);
 
+    // Create the battle report and save in the character
     const savedBattleReport = await this.battleModel.create({
-      result: battleResults.result,
-      rounds: battleResults.rounds,
+      result: battle.result,
+      rounds: battle.rounds,
       zone,
-      enemy: pickedEnemy,
-      fighter: character._id,
+      defender: pickedEnemy,
+      attacker: character._id,
     });
 
     await this.battleModel.findByIdAndDelete(character.battleReport);
 
     character.battleReport = savedBattleReport._id;
 
+    // Calculates experience and leveling up
     if (
-      character.experience + battleResults.result.xpDrop >=
+      character.experience + battle.result.xpDrop >=
       calculateExperience(character.level)
     ) {
       character.experience =
         character.experience +
-        battleResults.result.xpDrop -
+        battle.result.xpDrop -
         calculateExperience(character.level);
       character.level++;
     } else {
-      character.experience += battleResults.result.xpDrop;
+      character.experience += battle.result.xpDrop;
     }
 
+    // Save the changes in the character model
     await this.characterModel.findByIdAndUpdate(character._id, {
-      crowns: (character.crowns += battleResults.result.crownsDrop),
+      crowns: (character.crowns += battle.result.crownsDrop),
       experience: character.experience,
       level: character.level,
       battleReport: character.battleReport,
+    });
+
+    return savedBattleReport;
+  }
+
+  async battleCharacter({
+    attacker,
+    defenderId,
+  }: {
+    attacker: CharacterInterface;
+    defenderId: string;
+  }) {
+    if (!attacker.onboarded) {
+      throw new HttpException('Character not onboarded', 401);
+    }
+
+    const journal = attacker.journal;
+
+    const defender =
+      await this.characterModel.findById<CharacterInterface>(defenderId);
+
+    if (!defender) {
+      throw new HttpException('Defender not found', 404);
+    }
+
+    const battle = fight({ attacker, defender });
+
+    // Update journal logs
+    journal.arena.battles++;
+
+    if (battle.result.winner === attacker.name) {
+      journal.arena.wins++;
+    }
+
+    if (battle.result.winner === defender.name) {
+      journal.arena.defeats++;
+    }
+
+    if (battle.result.winner === 'Draw') {
+      journal.arena.draws++;
+    }
+
+    await this.journalModel.findByIdAndUpdate(journal._id, journal);
+
+    // Create the battle report and save in the character
+    const savedBattleReport = await this.battleModel.create({
+      result: battle.result,
+      rounds: battle.rounds,
+      defender: defender,
+      attacker: attacker._id,
+    });
+
+    await this.battleModel.findByIdAndDelete(attacker.battleReport);
+
+    attacker.battleReport = savedBattleReport._id;
+
+    // Save the changes in the character model
+    await this.characterModel.findByIdAndUpdate(attacker._id, {
+      battleReport: attacker.battleReport,
     });
 
     return savedBattleReport;
@@ -178,11 +254,17 @@ export class CharactersService {
   async findBattleReport(id: string) {
     const battleReport = await this.battleModel
       .findById(id)
-      .populate({ path: 'fighter' });
+      .populate({ path: 'attacker' });
 
     if (!battleReport) {
       throw new HttpException('Battle Report not found', 404);
     }
+
+    if (battleReport.defender && 'name' in battleReport.defender) {
+      return battleReport;
+    }
+
+    await battleReport.populate({ path: 'defender' });
 
     return battleReport;
   }

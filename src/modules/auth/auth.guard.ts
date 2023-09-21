@@ -32,7 +32,8 @@ export class AuthGuard implements CanActivate {
 
     if (
       routePath === '/api/characters/enemy' ||
-      routePath === '/api/characters/battle'
+      routePath === '/api/characters/battle' ||
+      routePath === '/api/characters/battle/:id'
     ) {
       journal = true;
     }
