@@ -8,7 +8,7 @@ import { JwtService } from '@nestjs/jwt';
 import { CharacterInterface } from 'lib/interfaces/character.interface';
 import { BattleCharacterDto } from 'src/dto/combat-character.dto';
 import { zones } from 'data/enemies';
-import { battleCreature, fight } from 'lib/utils/battleUtils';
+import { battleCreature, calculateHonour, fight } from 'lib/utils/battleUtils';
 import { randomBoolean } from 'lib/utils/randomUtils';
 import { Battle } from 'src/schemas/battle.schema';
 import { Journal } from 'src/schemas/journal.schema';
@@ -86,7 +86,7 @@ export class CharactersService {
     // Update journal logs
     journal.zones[zone][enemyName].battles++;
 
-    if (battle.result.winner === character.name) {
+    if (battle.result.winner === character._id) {
       journal.world.battles++;
       journal.world.wins++;
       journal.world.crownsEarned += battle.result.crownsDrop;
@@ -97,7 +97,7 @@ export class CharactersService {
       }
     }
 
-    if (battle.result.winner === pickedEnemy.name) {
+    if (battle.result.winner === pickedEnemy.id.toString()) {
       journal.world.battles++;
       journal.world.defeats++;
       journal.zones[zone][enemyName].defeats++;
@@ -124,7 +124,7 @@ export class CharactersService {
 
     character.battleReport = savedBattleReport._id;
 
-    // Calculates experience and leveling up
+    // If experience its enough for leveling up
     if (
       character.experience + battle.result.xpDrop >=
       calculateExperience(character.level)
@@ -134,7 +134,10 @@ export class CharactersService {
         battle.result.xpDrop -
         calculateExperience(character.level);
       character.level++;
-    } else {
+      character.power += 10;
+    }
+    // If its not enough only sum up the experience
+    else {
       character.experience += battle.result.xpDrop;
     }
 
@@ -147,6 +150,179 @@ export class CharactersService {
     });
 
     return savedBattleReport;
+  }
+
+  async arenaBattle({
+    attacker,
+    defenderId,
+  }: {
+    attacker: CharacterInterface;
+    defenderId: string;
+  }) {
+    const defender = await this.characterModel
+      .findById<CharacterInterface>(defenderId)
+      .populate('journal');
+
+    if (!defender) {
+      throw new HttpException('Character not found', 404);
+    }
+
+    if (defender._id == attacker._id) {
+      throw new HttpException('Cant fight the same character', 400);
+    }
+
+    const { rounds, result } = fight({ attacker, defender });
+
+    result.honourEarned = 0;
+    result.honourLost = 0;
+
+    const battleReport = await this.battleModel.create({
+      result: result,
+      rounds: rounds,
+      defender: defender._id,
+      attacker: attacker._id,
+    });
+
+    await this.battleModel.findByIdAndDelete(attacker.battleReport);
+    await this.battleModel.findByIdAndDelete(defender.battleReport);
+
+    // Attacker won
+    if (result.winner === attacker._id) {
+      const winLoss = calculateHonour(attacker, defender, true);
+
+      const earnedHonour = winLoss;
+      const lostHonour = winLoss * -1;
+
+      battleReport.result.honourEarned = earnedHonour;
+      battleReport.result.honourLost = lostHonour;
+
+      await battleReport.save();
+
+      // Update attacker journal and character
+      await this.characterModel.findByIdAndUpdate(attacker._id, {
+        battleReport: battleReport._id,
+        honour: attacker.honour + earnedHonour,
+      });
+
+      await this.journalModel.findByIdAndUpdate(attacker.journal._id, {
+        arena: {
+          battles: attacker.journal.arena.battles++,
+          wins: attacker.journal.arena.wins++,
+          damageInflicted: (attacker.journal.arena.damageInflicted +=
+            result.attackerTotalDamage),
+          damageReceived: (attacker.journal.arena.damageReceived +=
+            result.defenderTotalDamage),
+          honourEarned: (attacker.journal.arena.honourEarned += earnedHonour),
+        },
+      });
+
+      // Update defender journal and character
+      await this.characterModel.findByIdAndUpdate(defender._id, {
+        battleReport: battleReport._id,
+        honour:
+          defender.honour + lostHonour < 0 ? 0 : defender.honour + lostHonour,
+      });
+
+      await this.journalModel.findByIdAndUpdate(defender.journal._id, {
+        arena: {
+          battles: defender.journal.arena.battles++,
+          defeats: defender.journal.arena.defeats++,
+          damageInflicted: (defender.journal.arena.damageInflicted +=
+            result.defenderTotalDamage),
+          damageReceived: (defender.journal.arena.damageReceived +=
+            result.attackerTotalDamage),
+        },
+      });
+
+      return battleReport._id;
+    }
+    // Defender won
+    else if (result.winner === defender._id) {
+      // Returns an int which is the earned honour for the first argument
+      const winLoss = calculateHonour(defender, attacker, true);
+
+      const earnedHonour = winLoss;
+      const lostHonour = winLoss * -1;
+
+      battleReport.result.honourEarned = earnedHonour;
+      battleReport.result.honourLost = lostHonour;
+
+      await battleReport.save();
+
+      // Update attacker journal and character
+      await this.characterModel.findByIdAndUpdate(attacker._id, {
+        battleReport: battleReport._id,
+        honour:
+          attacker.honour + lostHonour < 0 ? 0 : attacker.honour + lostHonour,
+      });
+
+      await this.journalModel.findByIdAndUpdate(attacker.journal._id, {
+        arena: {
+          battles: attacker.journal.arena.battles++,
+          defeats: attacker.journal.arena.defeats++,
+          damageInflicted: (attacker.journal.arena.damageInflicted +=
+            result.attackerTotalDamage),
+          damageReceived: (attacker.journal.arena.damageReceived +=
+            result.attackerTotalDamage),
+        },
+      });
+
+      // Update defender journal and character
+      await this.characterModel.findByIdAndUpdate(defender._id, {
+        battleReport: battleReport._id,
+        honour: defender.honour + earnedHonour,
+      });
+
+      await this.journalModel.findByIdAndUpdate(defender.journal._id, {
+        arena: {
+          battles: defender.journal.arena.battles++,
+          wins: defender.journal.arena.wins++,
+          damageInflicted: (defender.journal.arena.damageInflicted +=
+            result.defenderTotalDamage),
+          damageReceived: (defender.journal.arena.damageReceived +=
+            result.defenderTotalDamage),
+          honourEarned: (defender.journal.arena.honourEarned += earnedHonour),
+        },
+      });
+
+      return battleReport._id;
+    }
+    // Draw
+    else {
+      // Update attacker journal and character
+      await this.characterModel.findByIdAndUpdate(attacker._id, {
+        battleReport: battleReport._id,
+      });
+
+      await this.journalModel.findByIdAndUpdate(attacker.journal._id, {
+        arena: {
+          battles: attacker.journal.arena.battles++,
+          draws: attacker.journal.arena.draws++,
+          damageInflicted: (attacker.journal.arena.damageInflicted +=
+            result.attackerTotalDamage),
+          damageReceived: (attacker.journal.arena.damageReceived +=
+            result.attackerTotalDamage),
+        },
+      });
+
+      // Update defender journal and character
+      await this.characterModel.findByIdAndUpdate(defender._id, {
+        battleReport: battleReport._id,
+      });
+
+      await this.journalModel.findByIdAndUpdate(defender.journal._id, {
+        arena: {
+          battles: defender.journal.arena.battles++,
+          draws: defender.journal.arena.draws++,
+          damageInflicted: (defender.journal.arena.damageInflicted +=
+            result.defenderTotalDamage),
+          damageReceived: (defender.journal.arena.damageReceived +=
+            result.defenderTotalDamage),
+        },
+      });
+
+      return battleReport._id;
+    }
   }
 
   async battleCharacter({
@@ -297,6 +473,7 @@ export class CharactersService {
 
     character.crowns -= requiredCrowns;
     character[stat]++;
+    character.power++;
 
     try {
       await this.characterModel.findByIdAndUpdate(character._id, character);
@@ -305,5 +482,51 @@ export class CharactersService {
     }
 
     return character;
+  }
+
+  async findArenaRivals(characterId: string) {
+    const character = await this.characterModel.findById(characterId);
+
+    if (!character) {
+      return null;
+    }
+
+    const position = await this.characterModel.countDocuments({
+      honour: { $gte: character.honour },
+    });
+
+    const ranking = await this.characterModel
+      .find(
+        {
+          honour: { $gte: character.honour },
+          _id: { $ne: characterId },
+        },
+        { name: 1, _id: 1, honour: 1 },
+      )
+      .sort({ honour: 1 })
+      .limit(4);
+
+    const rivals = ranking.map((rival, index) => ({
+      name: rival.name,
+      _id: rival._id,
+      honour: rival.honour,
+      rank: position - index - 1,
+    }));
+
+    rivals.unshift({
+      name: character.name,
+      _id: character._id,
+      honour: character.honour,
+      rank: position,
+    });
+
+    return rivals.reverse();
+  }
+
+  async findHighscore() {
+    return await this.characterModel
+      .find({ onboarded: true })
+      .sort({ honour: -1 })
+      .limit(100);
   }
 }

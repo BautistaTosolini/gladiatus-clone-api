@@ -131,6 +131,52 @@ export class CharactersController {
   }
 
   @UseGuards(AuthGuard)
+  @Post('/arena/:id')
+  async arenaBattle(
+    @Req() request: AuthenticatedRequest,
+    @Param('id') id: string,
+  ) {
+    try {
+      const character = request.user.character;
+
+      const battleReportId = await this.characterService.arenaBattle({
+        attacker: character,
+        defenderId: id,
+      });
+
+      return { battleReportId };
+    } catch (error) {
+      throw new HttpException(
+        { message: error.message },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
+  @UseGuards(AuthGuard)
+  @Get('/arena')
+  async findArenaRivals(@Req() request: AuthenticatedRequest) {
+    try {
+      const character = request.user.character;
+
+      const rivals = await this.characterService.findArenaRivals(character._id);
+
+      return rivals;
+    } catch (error) {
+      throw new HttpException(
+        { message: error.message },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
+  @UseGuards(AuthGuard)
+  @Get('/highscore')
+  async findHighscore() {
+    return this.characterService.findHighscore();
+  }
+
+  @UseGuards(AuthGuard)
   @Get(':id')
   async findOne(@Param('id') id: string) {
     try {

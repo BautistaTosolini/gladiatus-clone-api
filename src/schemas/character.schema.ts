@@ -93,6 +93,18 @@ export class Character {
     ref: 'Battle',
   })
   battleReport: string;
+
+  @Prop({
+    type: Number,
+    default: 0,
+  })
+  honour: number;
+
+  @Prop({
+    type: Number,
+    default: 40,
+  })
+  power: number;
 }
 
 export const CharacterSchema = SchemaFactory.createForClass(Character);

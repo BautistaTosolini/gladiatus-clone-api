@@ -45,4 +45,12 @@ export interface Result {
   winner: string;
   xpDrop?: number;
   crownsDrop?: number;
+  honourEarned?: number;
+  honourLost?: number;
+}
+
+export interface Rival {
+  _id: string;
+  name: string;
+  honour: number;
 }

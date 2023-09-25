@@ -12,4 +12,5 @@ export interface EnemyInterface {
   crowns: number[];
   boss?: boolean;
   id: number;
+  power?: number;
 }

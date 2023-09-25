@@ -49,25 +49,6 @@ export class UsersController {
     }
   }
 
-  @Get(':id')
-  async findOne(
-    @Param('id') id: string,
-    @Headers('journal') journalHeader: string,
-    @Headers('battle') battleReportHeader: string,
-  ) {
-    try {
-      const user = await this.userService.findOne({
-        id,
-        journal: journalHeader === 'true' ? true : false,
-        battleReport: battleReportHeader === 'true' ? true : false,
-      });
-
-      return user;
-    } catch (error) {
-      throw new HttpException({ message: error.message }, HttpStatus.NOT_FOUND);
-    }
-  }
-
   @UseGuards(AuthGuard)
   @Get()
   async authenticate(@Req() request: AuthenticatedRequest) {
@@ -94,6 +75,25 @@ export class UsersController {
         { message: error.message },
         HttpStatus.UNAUTHORIZED,
       );
+    }
+  }
+
+  @Get(':id')
+  async findOne(
+    @Param('id') id: string,
+    @Headers('journal') journalHeader: string,
+    @Headers('battle') battleReportHeader: string,
+  ) {
+    try {
+      const user = await this.userService.findOne({
+        id,
+        journal: journalHeader === 'true' ? true : false,
+        battleReport: battleReportHeader === 'true' ? true : false,
+      });
+
+      return user;
+    } catch (error) {
+      throw new HttpException({ message: error.message }, HttpStatus.NOT_FOUND);
     }
   }
 }

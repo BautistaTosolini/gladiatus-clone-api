@@ -12,7 +12,19 @@ export type BattleDocument = Battle & Document;
 })
 export class Battle {
   @Prop({
-    type: Object,
+    type: {
+      winner: String,
+      attackerFinalHealth: Number,
+      defenderFinalHealth: Number,
+      attackerTotalDamage: Number,
+      defenderTotalDamage: Number,
+      attackerHealth: Number,
+      defenderHealth: Number,
+      honourEarned: Number,
+      honourLost: Number,
+      xpDrop: Number,
+      crownsDrop: Number,
+    },
   })
   result: Result;
 
@@ -24,7 +36,7 @@ export class Battle {
   @Prop({
     type: String,
   })
-  zone: string;
+  zone?: string;
 
   @Prop({
     type: mongoose.Types.ObjectId,

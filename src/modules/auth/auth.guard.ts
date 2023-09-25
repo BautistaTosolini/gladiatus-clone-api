@@ -33,7 +33,8 @@ export class AuthGuard implements CanActivate {
     if (
       routePath === '/api/characters/enemy' ||
       routePath === '/api/characters/battle' ||
-      routePath === '/api/characters/battle/:id'
+      routePath === '/api/characters/battle/:id' ||
+      routePath === '/api/characters/arena/:id'
     ) {
       journal = true;
     }
@@ -48,6 +49,7 @@ export class AuthGuard implements CanActivate {
       });
 
       const result = await axios.get(`${BASE_API_URL}/users/${id}`, {
+        withCredentials: true,
         headers: {
           journal: journal ? 'true' : 'false',
           battle: battleReport ? 'true' : 'false',

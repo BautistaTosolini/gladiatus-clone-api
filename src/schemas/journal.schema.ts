@@ -20,7 +20,7 @@ export class Journal {
       draws: 0,
       damageInflicted: 0,
       damageReceived: 0,
-      honorEarned: 0,
+      honourEarned: 0,
     },
   })
   arena: {
@@ -30,7 +30,7 @@ export class Journal {
     draws: number;
     damageInflicted: number;
     damageReceived: number;
-    honorEarned: number;
+    honourEarned: number;
   };
 
   @Prop({

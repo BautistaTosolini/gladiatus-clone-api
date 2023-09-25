@@ -10,7 +10,7 @@ export interface JournalInterface {
     draws: number;
     damageInflicted: number;
     damageReceived: number;
-    honorEarned: number;
+    honourEarned: number;
   };
   world: {
     battles: number;

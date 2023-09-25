@@ -103,6 +103,10 @@ export class UsersService {
       .findById(id)
       .populate({ path: 'character' });
 
+    if (!user) {
+      throw new HttpException('User not found', 404);
+    }
+
     return user;
   }
 

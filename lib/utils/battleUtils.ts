@@ -44,6 +44,14 @@ export function getRandomEnemyStats(enemy: EnemyInterface) {
     agility: stats.agility,
     intelligence: stats.intelligence,
     charisma: stats.charisma,
+    power:
+      stats.strength +
+      stats.endurance +
+      stats.dexterity +
+      stats.agility +
+      stats.intelligence +
+      stats.charisma +
+      selectedLevel * 10,
   };
 }
 
@@ -206,7 +214,14 @@ export function fight({ attacker, defender }: FightParams): {
 
     return { rounds, result };
   } else if (attackerHP <= 0) {
-    winner = defender.name;
+    // If defender has id field its a creature
+    if ('id' in defender) {
+      winner = defender.id.toString();
+
+      // If it doesn't its a character
+    } else {
+      winner = defender._id;
+    }
 
     const result: Result = {
       winner,
@@ -226,7 +241,7 @@ export function fight({ attacker, defender }: FightParams): {
 
     return { rounds, result };
   } else {
-    winner = attacker.name;
+    winner = attacker._id;
 
     const result: Result = {
       winner,
@@ -290,7 +305,7 @@ export function battleCreature({ character, enemy }: BattleCreatureParams): {
     battle.result.crownsDrop = crownsDrop;
   }
 
-  if (battle.result.winner === character.name) {
+  if (battle.result.winner === character._id) {
     const xpDrop = getRandomNumber(pickedEnemy.xp[0], pickedEnemy.xp[1]);
     const crownsDrop = getRandomNumber(
       pickedEnemy.crowns[0],
@@ -301,7 +316,7 @@ export function battleCreature({ character, enemy }: BattleCreatureParams): {
     battle.result.crownsDrop = crownsDrop;
   }
 
-  if (battle.result.winner === pickedEnemy.name) {
+  if (battle.result.winner === pickedEnemy.id.toString()) {
     const xpDrop = parseInt(
       (getRandomNumber(pickedEnemy.xp[0], pickedEnemy.xp[1]) * 0.3).toFixed(0),
     );
@@ -312,4 +327,19 @@ export function battleCreature({ character, enemy }: BattleCreatureParams): {
   }
 
   return { battle, pickedEnemy };
+}
+
+export function calculateHonour(
+  attacker: CharacterInterface,
+  defender: CharacterInterface,
+  attackerWin: boolean,
+) {
+  const K = 40;
+  const expectedResult =
+    1 / (1 + 10 ** ((defender.honour - attacker.honour) / 400));
+  const realResult = attackerWin ? 1 : 0;
+
+  const winLoss = K * (realResult - expectedResult);
+
+  return parseInt(winLoss.toFixed(0));
 }

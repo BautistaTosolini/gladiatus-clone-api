@@ -20,6 +20,9 @@ export interface CharacterInterface {
   onboarded: boolean;
   gender: 'male' | 'female';
   battleReport: Types.ObjectId;
+  honour: number;
+  power: number;
+  rank?: number;
 }
 
 export interface BattleReport {
