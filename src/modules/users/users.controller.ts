@@ -42,6 +42,7 @@ export class UsersController {
 
       return user;
     } catch (error) {
+      console.log(error);
       throw new HttpException(
         { message: error.message },
         HttpStatus.BAD_REQUEST,
@@ -71,6 +72,7 @@ export class UsersController {
 
       return user;
     } catch (error) {
+      console.log(error);
       throw new HttpException(
         { message: error.message },
         HttpStatus.UNAUTHORIZED,
@@ -93,6 +95,7 @@ export class UsersController {
 
       return user;
     } catch (error) {
+      console.log(error);
       throw new HttpException({ message: error.message }, HttpStatus.NOT_FOUND);
     }
   }

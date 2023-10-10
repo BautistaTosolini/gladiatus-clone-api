@@ -1,9 +1,10 @@
 import { UserInterface } from 'lib/interfaces/user.interface';
 import { JournalInterface } from './journal.interface';
 import { Result, Round } from './battle.interface';
-import { Types } from 'mongoose';
+import { Document, Types } from 'mongoose';
+import { ItemInterface } from './item.interface';
 
-export interface CharacterInterface {
+export interface CharacterInterface extends Document {
   _id: string;
   name: string;
   owner: UserInterface | string;
@@ -21,8 +22,14 @@ export interface CharacterInterface {
   gender: 'male' | 'female';
   battleReport: Types.ObjectId;
   honour: number;
-  power: number;
+  power?: number;
   rank?: number;
+  inventory: null[][] | ItemInterface[][] | string[][];
+  mainHand: string | ItemInterface;
+  offHand: string | ItemInterface;
+  chest: string | ItemInterface;
+  head: string | ItemInterface;
+  legs: string | ItemInterface;
 }
 
 export interface BattleReport {

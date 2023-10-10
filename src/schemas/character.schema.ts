@@ -6,7 +6,7 @@ import mongoose from 'mongoose';
 })
 export class Character {
   @Prop({
-    type: mongoose.Types.ObjectId,
+    type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
   })
   owner: string;
@@ -83,13 +83,13 @@ export class Character {
   gender: 'male' | 'female';
 
   @Prop({
-    type: mongoose.Types.ObjectId,
+    type: mongoose.Schema.Types.ObjectId,
     ref: 'Journal',
   })
   journal: string;
 
   @Prop({
-    type: mongoose.Types.ObjectId,
+    type: mongoose.Schema.Types.ObjectId,
     ref: 'Battle',
   })
   battleReport: string;
@@ -101,10 +101,50 @@ export class Character {
   honour: number;
 
   @Prop({
-    type: Number,
-    default: 40,
+    type: [[{ type: mongoose.Schema.Types.ObjectId, ref: 'Item' }]],
+    default: [
+      [null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null],
+    ],
   })
-  power: number;
+  inventory: string[][];
+
+  @Prop({
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Item',
+    default: null,
+  })
+  mainHand: string;
+
+  @Prop({
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Item',
+    default: null,
+  })
+  offHand: string;
+
+  @Prop({
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Item',
+    default: null,
+  })
+  head: string;
+
+  @Prop({
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Item',
+    default: null,
+  })
+  chest: string;
+
+  @Prop({
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Item',
+    default: null,
+  })
+  legs: string;
 }
 
 export const CharacterSchema = SchemaFactory.createForClass(Character);

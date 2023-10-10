@@ -22,7 +22,7 @@ export class Battle {
       defenderHealth: Number,
       honourEarned: Number,
       honourLost: Number,
-      xpDrop: Number,
+      experienceDrop: Number,
       crownsDrop: Number,
     },
   })
@@ -49,6 +49,12 @@ export class Battle {
     ref: 'Character',
   })
   attacker: mongoose.Types.ObjectId;
+
+  @Prop({
+    type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Item' }],
+    required: false,
+  })
+  items: string[];
 }
 
 export const BattleSchema = SchemaFactory.createForClass(Battle);

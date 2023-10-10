@@ -8,6 +8,8 @@ import { JwtService } from '@nestjs/jwt';
 import axios from 'axios';
 import { Request } from 'express';
 import { BASE_API_URL } from 'lib/constants';
+import { CharacterInterface } from 'lib/interfaces/character.interface';
+import { UserInterface } from 'lib/interfaces/user.interface';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -18,17 +20,21 @@ export class AuthGuard implements CanActivate {
 
     let journal = false;
     let battleReport = false;
+    let inventory = false;
 
     // extract headers and cookies
     const token = this.extractTokenFromRequest(request);
-    const journalHeader = this.extractJournalHeader(request);
-    const battleReportHeader = this.extractBattleReportHeader(request);
+    const journalHeader = this.extractHeader(request, 'journal');
+    const battleReportHeader = this.extractHeader(request, 'battle');
+    const inventoryHeader = this.extractHeader(request, 'inventory');
 
     const routePath = request.route.path;
 
     if (journalHeader === 'true') journal = true;
 
     if (battleReportHeader === 'true') battleReport = true;
+
+    if (inventoryHeader === 'true') inventory = true;
 
     if (
       routePath === '/api/characters/enemy' ||
@@ -37,6 +43,10 @@ export class AuthGuard implements CanActivate {
       routePath === '/api/characters/arena/:id'
     ) {
       journal = true;
+    }
+
+    if (routePath === '/api/users') {
+      inventory = true;
     }
 
     if (!token) {
@@ -56,10 +66,23 @@ export class AuthGuard implements CanActivate {
         },
       });
 
-      const user = result.data;
+      const user = <UserInterface>result.data;
+
+      const response = await axios.put(
+        `${BASE_API_URL}/items`,
+        {
+          character: user.character,
+        },
+        { headers: { inventory: inventory ? 'true' : 'false' } },
+      );
+
+      const populatedCharacter = <CharacterInterface>response.data;
+
+      user.character = populatedCharacter;
 
       request['user'] = user;
     } catch (error) {
+      console.log(error);
       throw new UnauthorizedException();
     }
     return true;
@@ -87,18 +110,13 @@ export class AuthGuard implements CanActivate {
     return undefined;
   }
 
-  private extractJournalHeader(request: Request): string | undefined {
-    const journalHeader = request.headers['journal'];
-    if (typeof journalHeader === 'string') {
-      return journalHeader.toLowerCase();
-    }
-    return undefined;
-  }
-
-  private extractBattleReportHeader(request: Request): string | undefined {
-    const battleReport = request.headers['battle'];
-    if (typeof battleReport === 'string') {
-      return battleReport.toLowerCase();
+  private extractHeader(
+    request: Request,
+    headerName: string,
+  ): string | undefined {
+    const headerValue = request.headers[headerName];
+    if (typeof headerValue === 'string') {
+      return headerValue.toLowerCase();
     }
     return undefined;
   }

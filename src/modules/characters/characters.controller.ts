@@ -16,6 +16,8 @@ import { UserInterface } from 'lib/interfaces/user.interface';
 import { OnboardCharacterDto } from 'src/dto/onboard-character.dto';
 import { AuthGuard } from 'src/modules/auth/auth.guard';
 import { AuthenticatedRequest } from 'src/modules/users/users.controller';
+import { ItemInterface } from 'lib/interfaces/item.interface';
+import { ModuleGuard } from '../auth/module.guard';
 
 @Controller('api/characters')
 export class CharactersController {
@@ -28,6 +30,7 @@ export class CharactersController {
 
       return character;
     } catch (error) {
+      console.log(error);
       throw new HttpException(
         { message: error.message },
         HttpStatus.BAD_REQUEST,
@@ -51,6 +54,7 @@ export class CharactersController {
 
       return updatedCharacter;
     } catch (error) {
+      console.log(error);
       throw new HttpException(
         { message: error.message },
         HttpStatus.BAD_REQUEST,
@@ -77,6 +81,7 @@ export class CharactersController {
 
       return result;
     } catch (error) {
+      console.log(error);
       throw new HttpException(
         { message: error.message },
         HttpStatus.BAD_REQUEST,
@@ -100,6 +105,7 @@ export class CharactersController {
 
       return result;
     } catch (error) {
+      console.log(error);
       throw new HttpException(
         { message: error.message },
         HttpStatus.BAD_REQUEST,
@@ -123,6 +129,7 @@ export class CharactersController {
 
       return zoneInfo;
     } catch (error) {
+      console.log(error);
       throw new HttpException(
         { message: error.message },
         HttpStatus.BAD_REQUEST,
@@ -146,6 +153,7 @@ export class CharactersController {
 
       return { battleReportId };
     } catch (error) {
+      console.log(error);
       throw new HttpException(
         { message: error.message },
         HttpStatus.BAD_REQUEST,
@@ -163,6 +171,7 @@ export class CharactersController {
 
       return rivals;
     } catch (error) {
+      console.log(error);
       throw new HttpException(
         { message: error.message },
         HttpStatus.BAD_REQUEST,
@@ -184,6 +193,7 @@ export class CharactersController {
 
       return character;
     } catch (error) {
+      console.log(error);
       throw new HttpException(
         { message: error.message },
         HttpStatus.BAD_REQUEST,
@@ -199,6 +209,7 @@ export class CharactersController {
 
       return battleReport;
     } catch (error) {
+      console.log(error);
       throw new HttpException(
         { message: error.message },
         HttpStatus.BAD_REQUEST,
@@ -207,9 +218,32 @@ export class CharactersController {
   }
 
   @UseGuards(AuthGuard)
-  @Put('/:stat')
+  @Put('/equipment')
+  async equipItem(
+    @Body('item') item: ItemInterface,
+    @Req() request: AuthenticatedRequest,
+  ) {
+    try {
+      const character = request.user.character;
+
+      const updatedCharacter = await this.characterService.equipItem(
+        character,
+        item,
+      );
+
+      return updatedCharacter;
+    } catch (error) {
+      throw new HttpException(
+        { message: error.message },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
+  @UseGuards(AuthGuard)
+  @Put('/train')
   async train(
-    @Param('stat') stat: string,
+    @Body('stat') stat: string,
     @Req() request: AuthenticatedRequest,
   ) {
     try {
@@ -218,6 +252,28 @@ export class CharactersController {
       const result = await this.characterService.train({ stat, character });
 
       return result;
+    } catch (error) {
+      console.log(error);
+      throw new HttpException(
+        { message: error.message },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
+  @UseGuards(ModuleGuard)
+  @Put('/:id')
+  async updateCharacter(
+    @Body('payload') payload: any,
+    @Param('id') id: string,
+  ) {
+    try {
+      const updatedCharacter = await this.characterService.updateCharacter({
+        payload,
+        id,
+      });
+
+      return updatedCharacter;
     } catch (error) {
       throw new HttpException(
         { message: error.message },

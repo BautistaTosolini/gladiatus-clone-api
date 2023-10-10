@@ -43,7 +43,7 @@ export interface Result {
   attackerTotalDamage: number;
   defenderTotalDamage: number;
   winner: string;
-  xpDrop?: number;
+  experienceDrop?: number;
   crownsDrop?: number;
   honourEarned?: number;
   honourLost?: number;

@@ -1,18 +1,26 @@
 import { Injectable, HttpException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { OnboardCharacterDto } from 'src/dto/onboard-character.dto';
-import { UserInterface } from 'lib/interfaces/user.interface';
-import { Character } from 'src/schemas/character.schema';
+import axios from 'axios';
 import { JwtService } from '@nestjs/jwt';
-import { CharacterInterface } from 'lib/interfaces/character.interface';
-import { BattleCharacterDto } from 'src/dto/combat-character.dto';
-import { zones } from 'data/enemies';
-import { battleCreature, calculateHonour, fight } from 'lib/utils/battleUtils';
-import { randomBoolean } from 'lib/utils/randomUtils';
+
+import { Character } from 'src/schemas/character.schema';
 import { Battle } from 'src/schemas/battle.schema';
 import { Journal } from 'src/schemas/journal.schema';
+
+import { OnboardCharacterDto } from 'src/dto/onboard-character.dto';
+import { UserInterface } from 'lib/interfaces/user.interface';
+import { battleCreature, calculateHonour, fight } from 'lib/utils/battleUtils';
+import { CharacterInterface } from 'lib/interfaces/character.interface';
+import { BattleCharacterDto } from 'src/dto/combat-character.dto';
+import { randomBoolean } from 'lib/utils/randomUtils';
 import { calculateExperience } from 'lib/utils/characterUtils';
+import { BASE_API_URL } from 'lib/constants';
+
+import { zones } from 'data/enemies';
+import { items } from 'data/items';
+import { emptySlotExists, insertInventoryId } from 'lib/utils/inventoryUtils';
+import { ItemInterface } from 'lib/interfaces/item.interface';
 
 @Injectable()
 export class CharactersService {
@@ -83,6 +91,8 @@ export class CharactersService {
 
     const { battle, pickedEnemy } = battleCreature({ character, enemy });
 
+    const droppedItems = [];
+
     // Update journal logs
     journal.zones[zone][enemyName].battles++;
 
@@ -94,6 +104,34 @@ export class CharactersService {
 
       if (journal.zones[zone][enemyName].knowledge < 3 && randomBoolean(30)) {
         journal.zones[zone][enemyName].knowledge++;
+      }
+
+      // Create dropped item object
+      if (pickedEnemy.items && emptySlotExists(character.inventory)) {
+        for (let i = 0; i < pickedEnemy.items.length; i++) {
+          if (randomBoolean(items[pickedEnemy.items[i]].probability)) {
+            const result = await axios.post(`${BASE_API_URL}/items`, {
+              character,
+              item: items[pickedEnemy.items[i]],
+            });
+
+            const item = result.data;
+
+            droppedItems.push(item._id);
+
+            // Insert item if there is an empty slot
+            try {
+              const updatedInventory = insertInventoryId(
+                character.inventory,
+                item._id,
+              );
+
+              character.inventory = updatedInventory;
+            } catch (error) {
+              throw new HttpException(error.message, 400);
+            }
+          }
+        }
       }
     }
 
@@ -118,6 +156,7 @@ export class CharactersService {
       zone,
       defender: pickedEnemy,
       attacker: character._id,
+      items: droppedItems,
     });
 
     await this.battleModel.findByIdAndDelete(character.battleReport);
@@ -126,19 +165,18 @@ export class CharactersService {
 
     // If experience its enough for leveling up
     if (
-      character.experience + battle.result.xpDrop >=
+      character.experience + battle.result.experienceDrop >=
       calculateExperience(character.level)
     ) {
       character.experience =
         character.experience +
-        battle.result.xpDrop -
+        battle.result.experienceDrop -
         calculateExperience(character.level);
       character.level++;
-      character.power += 10;
     }
     // If its not enough only sum up the experience
     else {
-      character.experience += battle.result.xpDrop;
+      character.experience += battle.result.experienceDrop;
     }
 
     // Save the changes in the character model
@@ -147,6 +185,7 @@ export class CharactersService {
       experience: character.experience,
       level: character.level,
       battleReport: character.battleReport,
+      inventory: character.inventory,
     });
 
     return savedBattleReport;
@@ -436,7 +475,10 @@ export class CharactersService {
       throw new HttpException('Battle Report not found', 404);
     }
 
+    // If the battle was against a creature, its not necessary to populate the defender field but yes the items dropped
     if (battleReport.defender && 'name' in battleReport.defender) {
+      await battleReport.populate({ path: 'items' });
+
       return battleReport;
     }
 
@@ -473,7 +515,6 @@ export class CharactersService {
 
     character.crowns -= requiredCrowns;
     character[stat]++;
-    character.power++;
 
     try {
       await this.characterModel.findByIdAndUpdate(character._id, character);
@@ -528,5 +569,38 @@ export class CharactersService {
       .find({ onboarded: true })
       .sort({ honour: -1 })
       .limit(100);
+  }
+
+  async equipItem(character: CharacterInterface, item: ItemInterface) {
+    if (!character[item.type]) {
+      for (let i = 0; i < character.inventory.length; i++) {
+        for (let j = 0; j < character.inventory[i].length; j++) {
+          if (character.inventory[i][j] === item._id) {
+            character[item.type] = item._id;
+            character.inventory[i][j] = null;
+
+            await this.characterModel.findByIdAndUpdate(character._id, {
+              mainHand: character.mainHand,
+              offHand: character.offHand,
+              head: character.head,
+              chest: character.chest,
+              legs: character.legs,
+              inventory: character.inventory,
+            });
+
+            return character;
+          }
+        }
+      }
+    }
+    return character;
+  }
+
+  async updateCharacter({ payload, id }: { payload: any; id: string }) {
+    await this.characterModel.findByIdAndUpdate(id, payload);
+
+    const updatedCharacter = await this.characterModel.findById(id);
+
+    return updatedCharacter;
   }
 }
