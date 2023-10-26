@@ -14,7 +14,6 @@
   <a href="#rocket-technologies">Technologies</a> &#xa0; | &#xa0;
   <a href="#white_check_mark-requirements">Requirements</a> &#xa0; | &#xa0;
   <a href="#checkered_flag-starting">Starting</a> &#xa0; | &#xa0;
-  <a href="#memo-endpoints">Endpoints</a> &#xa0; | &#xa0;
   <a href="https://github.com/BautistaTosolini" target="_blank">Author</a>
 </p>
 
@@ -22,7 +21,7 @@
 
 ## :dart: About ##
 
-"Gladiatus" is a web browser-based MMORPG (Massively Multiplayer Online Role-Playing Game) developed by Gameforge and released in 2009. In the game, players create and customize their own gladiator characters. They embark on adventures, fight against various enemies and creatures, acquire new skills, and progress through different levels. This project aims to clone a significant portion of the original game's functionality in newer stack for learning purposes.
+<a href="https://lobby.gladiatus.gameforge.com" target="_blank">Gladiatus</a> is a web browser-based MMORPG (Massively Multiplayer Online Role-Playing Game) developed by <a href="https://gameforge.com" target="_blank">Gameforge</a> and released in 2009. In the game, players create and customize their own gladiator characters. They embark on adventures, fight against various enemies and creatures, acquire new skills, and progress through different levels. This project aims to clone a significant portion of the original game's functionality in newer stack for learning purposes.
 
 ## :sparkles: Features ##
 

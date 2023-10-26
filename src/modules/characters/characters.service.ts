@@ -467,9 +467,16 @@ export class CharactersService {
   }
 
   async findBattleReport(id: string) {
-    const battleReport = await this.battleModel
-      .findById(id)
-      .populate({ path: 'attacker' });
+    const battleReport = await this.battleModel.findById(id).populate({
+      path: 'attacker',
+      populate: [
+        { path: 'mainHand' },
+        { path: 'offHand' },
+        { path: 'legs' },
+        { path: 'head' },
+        { path: 'chest' },
+      ],
+    });
 
     if (!battleReport) {
       throw new HttpException('Battle Report not found', 404);
@@ -482,7 +489,16 @@ export class CharactersService {
       return battleReport;
     }
 
-    await battleReport.populate({ path: 'defender' });
+    await battleReport.populate({
+      path: 'defender',
+      populate: [
+        { path: 'mainHand' },
+        { path: 'offHand' },
+        { path: 'legs' },
+        { path: 'head' },
+        { path: 'chest' },
+      ],
+    });
 
     return battleReport;
   }
