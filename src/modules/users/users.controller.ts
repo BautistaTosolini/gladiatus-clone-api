@@ -10,6 +10,7 @@ import {
   UseGuards,
   Req,
   Headers,
+  Put,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { AuthenticateUserDto } from 'src/dto/authenticate-user.dto';
@@ -78,6 +79,17 @@ export class UsersController {
         HttpStatus.UNAUTHORIZED,
       );
     }
+  }
+
+  @Put()
+  async logout(@Res({ passthrough: true }) response: Response) {
+    response.cookie('AuthToken', '', {
+      maxAge: 1,
+      httpOnly: process.env.NODE_ENV === 'production',
+      secure: process.env.NODE_ENV === 'production',
+    });
+
+    return { message: 'Logged out' };
   }
 
   @Get(':id')

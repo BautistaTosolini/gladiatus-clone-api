@@ -112,6 +112,20 @@ export class Character {
   inventory: string[][];
 
   @Prop({
+    type: [[{ type: mongoose.Schema.Types.ObjectId, ref: 'Item' }]],
+    default: [
+      [null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null],
+    ],
+  })
+  shop: string[][];
+
+  @Prop({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Item',
     default: null,
